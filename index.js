@@ -153,7 +153,7 @@ var async = require('async'),
      * @param {Object} Model Mongoose Model Object, target of the search
      * @returns {Function} the actual run function with Model in its scope
      */
-    run = function (Model) {
+    run = function (Model, filterParameters) {
 
         /**
          * Method Run
@@ -171,6 +171,10 @@ var async = require('async'),
                 selectParameters = buildSelectParameters(params),
                 recordsTotal,
                 recordsFiltered;
+
+            if (filterParameters) {
+                for (var key in filterParameters) {findParameters[key] = filterParameters[key];}
+            }
 
             return new Promise(function (fullfill, reject) {
 
@@ -249,7 +253,7 @@ var async = require('async'),
      */
     datatablesQuery = function (Model) {
         return {
-            run: run(Model),
+            run: run(Model, filterParameters),
             isNaNorUndefined: isNaNorUndefined,
             buildFindParameters: buildFindParameters,
             buildSortParameters: buildSortParameters,
