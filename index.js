@@ -142,6 +142,10 @@ var async = require('async'),
             .columns
             .map(col => col.data)
             .reduce((selectParams, field) => {
+                if (field.indexOf('.') !== -1) {
+                    field = field.split('.')[0];
+                }
+
                 selectParams[field] = 1;
                 return selectParams;
             }, {});
@@ -153,7 +157,7 @@ var async = require('async'),
      * @param {Object} Model Mongoose Model Object, target of the search
      * @returns {Function} the actual run function with Model in its scope
      */
-    run = function (Model, filterParameters) {
+    run = function (Model) {
 
         /**
          * Method Run
@@ -161,7 +165,7 @@ var async = require('async'),
          * Performs the query on the passed Model object, using the DataTable params argument
          * @param {Object} params DataTable params object
          */
-        return function (params) {
+        return function (params, filterParameters, populate, formater) {
 
             var draw = Number(params.draw),
                 start = Number(params.start),
@@ -172,9 +176,17 @@ var async = require('async'),
                 recordsTotal,
                 recordsFiltered;
 
+            if (!formater) {
+                formater = function (data) {
+                    return data;
+                };
+            }
+
             if (filterParameters) {
                 for (var key in filterParameters) {findParameters[key] = filterParameters[key];}
             }
+
+            populate = populate || '';
 
             return new Promise(function (fullfill, reject) {
 
@@ -215,10 +227,15 @@ var async = require('async'),
                             .limit(length)
                             .skip(start)
                             .sort(sortParameters)
+                            .populate(populate)
+                            .lean()
                             .exec(function (err, results) {
                                 if (err) {
                                     return cb(err);
                                 }
+
+                                results.forEach(formater);
+
                                 cb(null, {
                                     draw: draw,
                                     recordsTotal: recordsTotal,
@@ -226,7 +243,6 @@ var async = require('async'),
                                     data: results
                                 });
                             });
-
                     }
                 ], function resolve (err, results) {
                     if (err) {
@@ -253,7 +269,7 @@ var async = require('async'),
      */
     datatablesQuery = function (Model) {
         return {
-            run: run(Model, filterParameters),
+            run: run(Model),
             isNaNorUndefined: isNaNorUndefined,
             buildFindParameters: buildFindParameters,
             buildSortParameters: buildSortParameters,
