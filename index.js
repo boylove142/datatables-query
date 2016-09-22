@@ -165,7 +165,7 @@ var async = require('async'),
          * Performs the query on the passed Model object, using the DataTable params argument
          * @param {Object} params DataTable params object
          */
-        return function (params, filterParameters, populate, formater) {
+        return function (params, options) {
 
             var draw = Number(params.draw),
                 start = Number(params.start),
@@ -176,17 +176,23 @@ var async = require('async'),
                 recordsTotal,
                 recordsFiltered;
 
-            if (!formater) {
-                formater = function (data) {
-                    return data;
-                };
+            options.hardFilter  = options.hardFilter || {};
+            options.filter      = options.filter || {};
+            options.populate    = options.populate || {};
+            options.formater    = typeof options.formater == 'function'
+                                  ? options.formater
+                                  : (data) => {return data;};
+
+
+            // Merge hardFilter into filter but not overwrite
+            for (let key in options.hardFilter) {
+                if (!options.filter[key])
+                    options.filter[key] = options.hardFilter[key];
             }
 
-            if (filterParameters) {
-                for (var key in filterParameters) {findParameters[key] = filterParameters[key];}
+            for (let key in options.filter) {
+                findParameters[key] = options.filter[key];
             }
-
-            populate = populate || '';
 
             return new Promise(function (fullfill, reject) {
 
@@ -203,7 +209,7 @@ var async = require('async'),
                         cb();
                     },
                     function fetchRecordsTotal (cb) {
-                        Model.count({}, function (err, count) {
+                        Model.count(options.hardFilter, function (err, count) {
                             if (err) {
                                 return cb(err);
                             }
@@ -227,14 +233,15 @@ var async = require('async'),
                             .limit(length)
                             .skip(start)
                             .sort(sortParameters)
-                            .populate(populate)
+                            .populate(options.populate)
                             .lean()
                             .exec(function (err, results) {
                                 if (err) {
                                     return cb(err);
                                 }
 
-                                results.forEach(formater);
+                                // Format result before sending
+                                results.forEach(options.formater);
 
                                 cb(null, {
                                     draw: draw,
