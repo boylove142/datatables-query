@@ -1,6 +1,6 @@
 {
   "name": "datatables-query-w-filter",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "A module for doing MongoDB pagination and search, based on DataTables query model. Relies on Express and Mongoose.",
   "repository": {
     "type": "git",
