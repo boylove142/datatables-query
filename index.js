@@ -178,11 +178,10 @@ var async = require('async'),
 
             options.hardFilter  = options.hardFilter || {};
             options.filter      = options.filter || {};
-            options.populate    = options.populate || {};
+            options.populate    = options.populate || '';
             options.formater    = typeof options.formater == 'function'
                                   ? options.formater
                                   : (data) => {return data;};
-
 
             // Merge hardFilter into filter but not overwrite
             for (let key in options.hardFilter) {
