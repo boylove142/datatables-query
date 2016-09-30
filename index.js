@@ -239,6 +239,12 @@ var async = require('async'),
                                     return cb(err);
                                 }
 
+                                results.forEach((data) => {
+                                    data.DT_RowId = data._id.toString();
+
+                                    return data;
+                                });
+
                                 // Format result before sending
                                 results.forEach(options.formater);
 
