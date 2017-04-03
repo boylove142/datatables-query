@@ -54,15 +54,14 @@ var async = require('async'),
      * @returns {*}
      */
     buildFindParameters = function (params) {
-
         if (!params || !params.columns || !params.search || (!params.search.value && params.search.value !== '')) {
             return null;
         }
 
+
         var searchText = params.search.value,
             findParameters = {},
-            searchRegex,
-            searchOrArray = [];
+            searchRegex;
 
         if (searchText === '') {
             return findParameters;
@@ -77,13 +76,15 @@ var async = require('async'),
             return findParameters;
         }
 
-        searchableFields.forEach(function (field) {
-            var orCondition = {};
-            orCondition[field] = searchRegex;
-            searchOrArray.push(orCondition);
+        const conditions = [];
+
+        searchableFields.forEach(function(field) {
+            if (!field) return;
+
+            conditions.push(`(this.${field} && this.${field}.toString().match(${searchRegex}) !== null)`);
         });
 
-        findParameters.$or = searchOrArray;
+        findParameters.$where = conditions.join(' || ');
 
         return findParameters;
     },
@@ -133,7 +134,6 @@ var async = require('async'),
     },
 
     buildSelectParameters = function (params) {
-
         if (!params || !params.columns || !Array.isArray(params.columns)) {
             return null;
         }
@@ -166,6 +166,7 @@ var async = require('async'),
          * @param {Object} params DataTable params object
          */
         return function (params, options) {
+            params = excludeNonDataColumns(params);
 
             var draw = Number(params.draw),
                 start = Number(params.start),
@@ -287,6 +288,20 @@ var async = require('async'),
             buildSortParameters: buildSortParameters,
             buildSelectParameters: buildSelectParameters
         };
+    },
+
+    excludeNonDataColumns = function (params) {
+        var i = 0;
+
+        for (let col of params.columns) {
+            if (col.data == '') {
+                params.columns.splice(i, 1);
+            }
+
+            ++i;
+        }
+
+        return params;
     };
 
 module.exports = datatablesQuery;
