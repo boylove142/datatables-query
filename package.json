@@ -4,7 +4,7 @@
   "description": "A module for doing MongoDB pagination and search, based on DataTables query model. Relies on Express and Mongoose.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fiddus/datatables-query.git"
+    "url": "git+https://github.com/boylove142/datatables-query.git"
   },
   "main": "index.js",
   "scripts": {
