@@ -166,13 +166,14 @@ var async = require('async'),
          * @param {Object} params DataTable params object
          */
         return function (params, options) {
-            params = excludeNonDataColumns(params);
+            options             = options || {};
+            params              = excludeNonDataColumns(params);
 
-            var draw = Number(params.draw),
-                start = Number(params.start),
-                length = Number(params.length),
-                findParameters = buildFindParameters(params),
-                sortParameters = buildSortParameters(params),
+            var draw            = Number(params.draw),
+                start           = Number(params.start),
+                length          = Number(params.length),
+                findParameters  = buildFindParameters(params),
+                sortParameters  = buildSortParameters(params),
                 selectParameters = buildSelectParameters(params),
                 recordsTotal,
                 recordsFiltered;
